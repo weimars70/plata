@@ -1,0 +1,33 @@
+trigger:
+  branches:
+    exclude:
+      - '*'
+  paths:
+    exclude:
+      - '*'
+pr:
+    branches:
+      include:
+        - 'master'
+        - 'hotfix'
+    paths:
+      exclude:
+        - '*'
+
+variables:
+  - ${{ if or(eq(variables['Build.Reason'], 'PullRequest'),startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/feature/'),eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
+    - group: 'cm-dineros-bolsillos-prod'
+  - ${{ if or(eq(variables['Build.Reason'], 'PullRequest'),startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/feature/'),eq(variables['Build.SourceBranch'], 'refs/heads/test')) }}:
+    - group: 'cm-dineros-bolsillos-test'
+  - ${{ if or(eq(variables['Build.Reason'], 'PullRequest'),startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/feature/'),eq(variables['Build.SourceBranch'], 'refs/heads/dev')) }}:
+    - group: 'cm-dineros-bolsillos-dev'
+
+resources:
+  repositories:
+    - repository: template-apis-ci
+      type: git
+      name: DevopsInfrasture/template-apis-ci
+      ref: refs/heads/main
+
+extends:
+  template: init.yml@template-apis-ci
