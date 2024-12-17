@@ -1,4 +1,3 @@
-
 export const TYPES = {
     Firestore: Symbol.for('Firestore'),
     FirestoreBolsilloRepository: Symbol.for('FirestoreBolsilloRepository'),

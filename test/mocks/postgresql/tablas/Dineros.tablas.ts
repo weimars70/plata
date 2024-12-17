@@ -264,4 +264,14 @@ export const TABLAS_DINEROS = {
             CONSTRAINT causales_inconsistencia_unique UNIQUE (nombre)
         );`);
     },
+    generarTablaLoteBolsilloVencido: (db: IMemoryDb) => {
+        db.public.none(`
+            CREATE TABLE IF NOT EXISTS public.lote_bolsillo_vencido (
+                id_lote SERIAL NOT NULL,
+                estado INTEGER DEFAULT 1,
+                cantidad_registros INTEGER NOT NULL,
+                fecha_vencimiento_lote DATE NOT NULL
+            );
+        `);
+    },
 };

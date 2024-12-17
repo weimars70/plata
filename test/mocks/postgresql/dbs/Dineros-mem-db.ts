@@ -6,6 +6,7 @@ import {
     insertarBolsilloDia,
     insertarInconsistencia,
     insertarLegalizacion,
+    insertarLoteBolsilloVencido,
     insertarMediosPago,
     insertarRecaudo,
     insertarRecursos,
@@ -57,6 +58,7 @@ const inicializarTablas = (bdmen: IMemoryDb) => {
     TABLAS_DINEROS.generarTablaAliadosEquipos(bdmen);
     TABLAS_DINEROS.generarTablaFaltanteBolsillo(bdmen);
     TABLAS_DINEROS.generarTablaRecursosInconsistencias(bdmen);
+    TABLAS_DINEROS.generarTablaLoteBolsilloVencido(bdmen);
 };
 
 const poblarInformacion = (dbmem: IMemoryDb) => {
@@ -75,6 +77,7 @@ const poblarInformacion = (dbmem: IMemoryDb) => {
     insertarRecaudo(dbmem);
     insertarTransaccion(dbmem);
     insertarAliadosEquipos(dbmem);
+    insertarLoteBolsilloVencido(dbmem);
 };
 
 const configurarFunciones = (dbmem: IMemoryDb) => {

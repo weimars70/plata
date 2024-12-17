@@ -61,4 +61,4 @@ export const ErrorConfirmacionBolsilloRouter = async (
     const dataError = validateDataPubSub<IErrorPitagoras>(errorPitagorasSchema, req.params);
     const response = await bolsilloAppService.errorConfirmacionBolsillo(dataError);
     return reply.send({ ...response, id: req.id });
-}
+};

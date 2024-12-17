@@ -88,9 +88,8 @@ export class BolsilloDiaDao {
 
     public async getRecaudosVencidos(): Promise<IRecaudoNoVencidoResponse[] | null> {
         try {
-            const query = `
-            select id_bolsillo_dia, valor, dias_legalizacion, fecha_hora, id_recurso
-            from bolsillo_dia where estado = 'vigente'`;
+            const query = `SELECT a.id_lote,a.fecha_vencimiento_lote::DATE as fecha_vencimiento_lote
+             FROM lote_bolsillo_vencido a WHERE a.fecha_vencimiento_lote::DATE < CURRENT_DATE AND ESTADO=1`;
             const results = await this.db.manyOrNone<IRecaudoNoVencidoResponse>(query);
             return results || [];
         } catch (error) {

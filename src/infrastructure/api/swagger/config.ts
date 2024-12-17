@@ -1,8 +1,8 @@
-import { PREFIX, HOST, NODE_ENV } from '@util';
+import { HOST, NODE_ENV } from '@util';
 import { FastifyDynamicSwaggerOptions } from '@fastify/swagger';
 
 export const swagger_config: FastifyDynamicSwaggerOptions = {
-    routePrefix: `${PREFIX}/docs`,
+    routePrefix: `/docs`,
     swagger: {
         info: {
             title: 'Microservice Template',

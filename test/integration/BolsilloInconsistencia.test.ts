@@ -44,5 +44,4 @@ describe('Consultar inconsistencias', () => {
         expect(payload.data.data.length).toBe(0);
         expect(payload.data.paginador).toBeDefined();
     });
-
 });

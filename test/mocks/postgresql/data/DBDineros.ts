@@ -137,3 +137,10 @@ export const insertarAliadosEquipos = (bdmen: IMemoryDb): void => {
         VALUES
         (244, 3, 0);`);
 };
+
+export const insertarLoteBolsilloVencido = (bdmen: IMemoryDb): void => {
+    bdmen.public.none(`
+        INSERT INTO public.lote_bolsillo_vencido (id_lote, estado,cantidad_registros, fecha_vencimiento_lote)
+        VALUES (123, 1, 10,'2024-12-10' );
+    `);
+};

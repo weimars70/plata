@@ -9,5 +9,3 @@ export class FakePublicador implements IPubSubRepository {
         this.eventos.push(evento);
     }
 }
-
-

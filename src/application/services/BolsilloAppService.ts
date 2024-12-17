@@ -1,6 +1,7 @@
 import { DEPENDENCY_CONTAINER, TYPES } from '@configuration';
 import { injectable } from 'inversify';
 import { Result, Response } from '@domain/response';
+import { PubSub } from '@google-cloud/pubsub';
 import {
     IBolsillo,
     IConsultaBolsillo,
@@ -19,7 +20,7 @@ import {
     RecursosDao,
     TransaccionesDao,
 } from '@infrastructure/repositories';
-import { contarDomingosYFestivos, getDiasFestivos, LISTA_TERMINALES } from '@util';
+import { LISTA_TERMINALES } from '@util';
 import { IBolsilloDiaALegalizar, IBolsillosALegalizar } from '@application/interfaces/IBolsillosALegalizar';
 import { IBolsillosLegalizacion } from '@application/data/out/IBolsillosLegalizacion';
 import {
@@ -29,6 +30,9 @@ import {
 import { IBolsilloCalculoResponse, IBolsilloDiaVencido, INoBolsilloResponse } from '@application/data/out';
 import { BadSchemaException } from '@domain/exceptions';
 import { IBolsilloPubSubRepository } from '@infrastructure/pubsub/IBolsilloPubSub';
+import { IEstadoValores } from '@application/data/in/IEstadoValores';
+import { EstadoValoresDao } from '@infrastructure/repositories/postgres/dao/EstadoValoresDao';
+import { TOPIC_ACTUALIZACION_BOLSILLOS } from '@infrastructure/pubsub/pubsub/Topics';
 
 @injectable()
 export class BolsilloAppService {
@@ -44,6 +48,8 @@ export class BolsilloAppService {
     private readonly ESTADO_NO_VENCIDO = 'vigente';
     private pubsubPublisher = DEPENDENCY_CONTAINER.get<IBolsilloPubSubRepository>(TYPES.PubSubBolsillo);
     private readonly array_terminales = LISTA_TERMINALES.split(',');
+    private readonly estadoValoresDao = DEPENDENCY_CONTAINER.get(EstadoValoresDao);
+    private readonly pubsub = DEPENDENCY_CONTAINER.get<PubSub>(TYPES.PubSub);
 
     async recaudoCalcularBolsillo(data: IBolsillo): Promise<Response<string | null>> {
         const idEquipo = await this.transaccionesDao.getRecursoTransaccion(data.id_transaccion);
@@ -110,17 +116,18 @@ export class BolsilloAppService {
     async calcularVencidos(): Promise<Response<string | null>> {
         const recaudos = await this.bolsilloDiaDao.getRecaudosVencidos();
         if (!recaudos || recaudos.length === 0) throw new Error('No se encontraron recaudos vigentes');
-        const currentDateTime = new Date();
-        const getFestivos = await getDiasFestivos(new Date().getFullYear());
         for (const recaudo of recaudos) {
-            const festivos = await contarDomingosYFestivos(new Date(recaudo.fecha_hora), new Date(), getFestivos);
-            const diferenciaMilisegundos = currentDateTime.getTime() - new Date(recaudo.fecha_hora).getTime();
-            const diferenciaDias = diferenciaMilisegundos / (1000 * 60 * 60 * 24);
-            if (diferenciaDias - festivos >= recaudo.dias_legalizacion) {
-                this.bolsilloDiaDao.updateBolsilloDiaVencido(recaudo.id_bolsillo_dia, recaudo.id_recurso);
+            try {
+                // Publish recaudos to PubSub
+                await this.pubsub.topic(TOPIC_ACTUALIZACION_BOLSILLOS).publishMessage({
+                    json: { ...recaudo },
+                });
+            } catch (error) {
+                console.error('Error publicando Bolsillos vencidos a PubSub:', error);
+                throw new Error('Error publicando Bolsillos vencidos a PubSub');
             }
         }
-        return Result.ok('Bolsillos vencidos actualizados con exito');
+        return Result.ok('Bolsillos vencidos enviados para actualización');
     }
 
     async calcularDinerosLegalizacion(data: IBolsillo): Promise<Response<string | null>> {
@@ -281,5 +288,10 @@ export class BolsilloAppService {
             return Result.ok('Reintentos actualizados con exito');
         }
         return Result.ok('Limite de reintentos alcanzado');
+    }
+
+    async actualizarEstadoValores(data: IEstadoValores): Promise<Response<string>> {
+        await this.estadoValoresDao.actualizarEstadoValores(data.id_lote);
+        return Result.ok('Estado de valores actualizado con éxito');
     }
 }

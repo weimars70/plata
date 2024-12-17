@@ -20,6 +20,7 @@ import { IBolsilloPubSubRepository } from '@infrastructure/pubsub/IBolsilloPubSu
 import { BolsilloPubsub } from '@infrastructure/pubsub/pubsub';
 import { pubsub } from '@infrastructure/pubsub/pubsub/config/PubSubConfig';
 import { PubSub } from '@google-cloud/pubsub';
+import { EstadoValoresDao } from '@infrastructure/repositories/postgres/dao/EstadoValoresDao';
 
 export const DEPENDENCY_CONTAINER = new Container();
 
@@ -40,4 +41,5 @@ export const createDependencyContainer = (): void => {
     DEPENDENCY_CONTAINER.bind<BolsilloRepository>(TYPES.FirestoreBolsilloRepository)
         .to(FirestoreBolsilloRepository)
         .inSingletonScope();
+    DEPENDENCY_CONTAINER.bind(EstadoValoresDao).toSelf().inSingletonScope();
 };
